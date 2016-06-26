@@ -1,0 +1,11 @@
+c:\users\riadh\documents\visual studio 2010\Projects\Musical Fountain\Musical Fountain\bin\Debug\Musical Fountain.exe
+c:\users\riadh\documents\visual studio 2010\Projects\Musical Fountain\Musical Fountain\bin\Debug\Musical Fountain.pdb
+c:\users\riadh\documents\visual studio 2010\Projects\Musical Fountain\Musical Fountain\bin\Debug\Musical Fountain.xml
+c:\users\riadh\documents\visual studio 2010\Projects\Musical Fountain\Musical Fountain\obj\x86\Debug\Musical_Fountain.Resources.resources
+c:\users\riadh\documents\visual studio 2010\Projects\Musical Fountain\Musical Fountain\obj\x86\Debug\Musical Fountain.vbproj.GenerateResource.Cache
+c:\users\riadh\documents\visual studio 2010\Projects\Musical Fountain\Musical Fountain\obj\x86\Debug\Musical Fountain.exe
+c:\users\riadh\documents\visual studio 2010\Projects\Musical Fountain\Musical Fountain\obj\x86\Debug\Musical Fountain.xml
+c:\users\riadh\documents\visual studio 2010\Projects\Musical Fountain\Musical Fountain\obj\x86\Debug\Musical Fountain.pdb
+C:\Users\riadh\Documents\Visual Studio 2010\Projects\Musical Fountain\Musical Fountain\obj\x86\Debug\Musical_Fountain.Musical_Fountain.resources
+C:\Users\riadh\Documents\Visual Studio 2010\Projects\Musical Fountain\Musical Fountain\obj\x86\Debug\Musical_Fountain.Connection.resources
+C:\Users\riadh\Documents\Visual Studio 2010\Projects\Musical Fountain\Musical Fountain\obj\x86\Debug\Musical_Fountain.Electrovalves_and_VuMeter.resources

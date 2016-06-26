@@ -1,0 +1,198 @@
+﻿Imports System
+Imports System.Text
+Imports System.IO.Ports
+Imports System.Runtime.InteropServices
+
+Public Class Musical_Fountain
+    Dim foldersPath(256) As String
+    Dim filescount As Integer = 0
+    Private Shared ReadOnly sAlias As String = "TeaTimerAudio"
+    Public ispaused As Boolean = False
+
+    Private Function get_playlist_length() As Integer
+        Dim length As Integer = 0
+        For i = 0 To 255
+            If foldersPath(i) <> Nothing Then
+                length = length + 1
+            End If
+        Next
+        Return (length)
+    End Function
+
+    Private Sub add_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles add.Click
+
+        Dim l As Integer = get_playlist_length()
+        If l = 256 Then
+            MsgBox("PlayList is Full")
+        Else
+            addfile.ShowDialog()
+            Dim browseFile As System.IO.FileInfo
+            browseFile = My.Computer.FileSystem.GetFileInfo(addfile.FileName)
+            foldersPath(filescount) = browseFile.DirectoryName
+            fileslist.Items.Add(browseFile.Name)
+            filescount = filescount + 1
+        End If
+    End Sub
+
+    Private Sub del_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles del.Click
+        Dim delpos As Integer = fileslist.SelectedIndex
+        If delpos <> -1 Then
+            Dim l As Integer = get_playlist_length()
+            foldersPath(delpos) = Nothing
+            fileslist.Items.Remove(fileslist.SelectedItem)
+            While delpos < l - 1
+                foldersPath(delpos) = foldersPath(delpos + 1)
+                delpos = delpos + 1
+            End While
+        End If
+    End Sub
+
+    ''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+
+    <DllImport("winmm.dll")> _
+    Private Shared Function mciSendString(ByVal strCommand As String, ByVal strReturn As StringBuilder, ByVal iReturnLength As Integer, ByVal hwndCallback As IntPtr) As Long
+    End Function
+
+    ''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+    <DllImport("winmm.dll")> _
+    Public Shared Function waveOutSetVolume(ByVal hwo As IntPtr, ByVal dwVolume As UInteger) As Integer
+    End Function
+
+    ''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+    ' Private Declare Function mciSendString Lib "winmm.dll" Alias "mciSendStringA" _
+    '(ByVal lpstrCommand As String, ByVal lpstrReturnString As String, _
+    'ByVal uReturnLength As Integer, ByVal hwndCallback As Integer) As Integer
+    ''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+
+    Public Shared Sub Quit() 'Stop function
+        Dim sCommand As String = "close " & sAlias
+        mciSendString(sCommand, Nothing, 0, IntPtr.Zero)
+    End Sub
+
+    Public Shared Sub Pausing() 'Pause function
+        Dim sCommand As String = "pause " & sAlias
+        mciSendString(sCommand, Nothing, 0, IntPtr.Zero)
+    End Sub
+    Public Shared Sub Resuming() 'Resume function
+        Dim sCommand As String = "resume " & sAlias
+        mciSendString(sCommand, Nothing, 0, IntPtr.Zero)
+    End Sub
+    Public Shared Sub Play()
+        Dim sCommand As String = "play " & sAlias
+        mciSendString(sCommand, Nothing, 0, IntPtr.Zero)
+    End Sub
+
+    Public Shared Function Status() As String 'Get Output Device Status function
+        Dim sBuffer As New StringBuilder(128)
+        mciSendString("status " & sAlias & " mode", sBuffer, sBuffer.Capacity, IntPtr.Zero)
+        Return sBuffer.ToString()
+    End Function
+    ''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+    Public Shared Sub Open(ByVal sFileName As String)
+        If Status() <> "" Then
+            Quit() ' Stop
+        End If
+        Dim sCommand As String = "open """ & sFileName & """ alias " & sAlias
+        mciSendString(sCommand, Nothing, 0, IntPtr.Zero)
+    End Sub
+
+    ''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+
+
+
+    Private Sub ElectrovalvesAndVuMeterSettingsToolStripMenuItem_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles ElectrovalvesAndVuMeterSettingsToolStripMenuItem.Click
+        If SerialPort1.IsOpen Then
+            SerialPort1.Close()
+        End If
+        Electrovalves_and_VuMeter.Show()
+    End Sub
+
+
+
+
+
+    ''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+
+
+    Private Sub playbtn_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles playbtn.Click
+        If fileslist.SelectedItem = Nothing Then
+            MsgBox("Please Select your audio file to play")
+            Exit Sub
+        Else
+            Dim filetoplay As String = foldersPath(fileslist.SelectedIndex) & "\" & fileslist.SelectedItem.ToString
+            Open(filetoplay)
+            Play()
+            ispaused = False
+        End If
+    End Sub
+
+    Private Sub pausebtn_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles pausebtn.Click
+
+        If ispaused = False Then
+            Pausing() 'Pause
+            ispaused = True
+        Else
+            Resuming()
+            ispaused = False
+        End If
+    End Sub
+
+    Private Sub Stopbtn_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles Stopbtn.Click
+
+        Quit() 'stop
+        ispaused = False
+    End Sub
+
+    Private Sub Volume_Scroll(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles Volume.Scroll
+        On Error Resume Next
+        'UShort.MaxValue = 2^16 - 1= 65535
+        'UShort.MinValue = 0
+        Dim Volevel As Integer = ((UShort.MaxValue / 10) * Volume.Value)
+        waveOutSetVolume(IntPtr.Zero, Volevel)
+    End Sub
+
+    Public Sub SerialPortCFG()
+        SerialPort1.PortName = Connection.SelectedCOMPort 'Set SerialPort1 to the selected COM port at startup
+        SerialPort1.BaudRate = 4800 'Set Baud rate to the selected value on
+        SerialPort1.Parity = IO.Ports.Parity.None
+        SerialPort1.StopBits = IO.Ports.StopBits.One
+        SerialPort1.DataBits = 8 'Open our serial port
+        If Not SerialPort1.IsOpen Then
+            SerialPort1.Open()
+        End If
+    End Sub
+
+    '---------------------------------------------------------------------------------------------------
+    Private Sub Musical_Fountain_Load(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles MyBase.Load
+        Volume.Value = 10
+        '----------------------------------------------------------------------------------
+        SerialPortCFG()
+
+        'l1l1.BackColor = Color.Green
+        'l1l2.BackColor = Color.Green
+        'l1l3.BackColor = Color.Green
+        'l1l4.BackColor = Color.Green
+        'l1l5.BackColor = Color.Green
+        'l1l6.BackColor = Color.Yellow
+        'l1l7.BackColor = Color.Yellow
+        'l1l8.BackColor = Color.Yellow
+        'l1l9.BackColor = Color.Yellow
+        'l1l10.BackColor = Color.Yellow
+        'l1l11.BackColor = Color.Red
+        'l1l12.BackColor = Color.Red
+        'l1l13.BackColor = Color.Red
+        'l1l14.BackColor = Color.Red
+        'l1l15.BackColor = Color.Red
+
+    End Sub
+    '---------------------------------------------------------------------------------------------------
+    Private Sub SerialPort1_DataReceived(ByVal sender As Object, ByVal e As System.IO.Ports.SerialDataReceivedEventArgs) Handles SerialPort1.DataReceived
+        MsgBox(SerialPort1.ReadExisting()) 'Automatically called every time a data is received at the serialPort
+    End Sub
+    '---------------------------------------------------------------------------------------------------
+    Private Sub Musical_Fountain_UnLoad(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles MyBase.FormClosing
+        If SerialPort1.IsOpen Then
+            SerialPort1.Close()
+        End If
+    End Sub
+End Class
